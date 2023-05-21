@@ -7,6 +7,7 @@ import time
 
 # Objeto de captura de audio
 class AudioStream(object):
+    # Constructor de la clase AudioStream
     def __init__(self):
         self.chunk = 1024 *2
         self.format = pyaudio.paInt16
@@ -26,3 +27,61 @@ class AudioStream(object):
         )
         self.init_plots()
         self.start_plot()
+
+    def init_plots(self):
+        # x e y para la graficacion
+        x = np.arange(0,2*self.chunk, 2)
+        y = np.linspace(0, self.rate, self.chunk)
+
+        # figura con dos graficos
+        self.fig, (timeG, freqG) = plt.subplots(2, figsize=(15,7))
+        self.fig.canvas.mpl_connect('button_press_event', self.onClick)
+
+        # limite de la grafica tiempo
+        timeG.set_title("Dominio del Tiempo")
+        timeG.set_ylabel=("Amplitud")
+        timeG.set_ylim(-10000, 10000)
+        timeG.set_xlim(0, 2*self.chunk)
+        plt.setp(
+            timeG, yticks=[0],
+            xticks=[0, self.chunk, 2*self.chunk]
+        )
+
+        # limite de la grafica frecuencia
+        timeG.set_title("Dominio de la Frecuencia")
+        timeG.set_ylabel=("Amplitud")
+        timeG.set_xlabel=("Frecuencia")
+        timeG.set_xlim(20, self.rate/12)
+        timeG.set_xlim(0, 2*self.chunk)
+        plt.setp(
+            timeG, yticks=[0, 5, 15, 20],
+            xticks=[0, 100, 200, 300, 1000, 3000, 4000]
+        )
+
+        # Mostrar la ventana
+        mngr = plt.get_current_fig_manager()
+        mngr.window.setGeometry = (5, 120, 1910, 1070)
+        plt.show(block=False)
+
+    # Graficas en tiempo real
+    def start_plot(self):
+
+        print("stream started")
+        frame_count = 0
+        start_time = time.time()
+
+        while not self.pause:
+            # tomar valores desde el microfono
+            data = self.stream.read(self.chunk)
+
+            # pasar los valores leidos a tipo int
+            data_int = np.frombuffer(data, dtype="h")
+
+            # valores en un arreglo
+            data_np = np.array(data_int, dtype="h")
+
+            # agregando los valores a la grafica de tiempo
+            self.line.set_ydata(data_np)
+
+            # Calculo de la transformada rapida de fourier
+            
